@@ -11,5 +11,6 @@ API_KEY = "apiKey"
 API_KEY_AUTH = "apiKeyAuth"
 DIGEST_AUTH = "digestAuth"
 
-SETUP_STEP = "user"
-AUTH_STEP = "auth"
+API_KEY_AUTH_STEP = "api_key_auth"
+DIGEST_AUTH_STEP = "digest_auth"
+USER_STEP = "user"
