@@ -17,15 +17,40 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import DOMAIN
+from .const import (
+    API_KEY,
+    API_KEY_AUTH,
+    AUTH_STEP,
+    AUTH_TYPE,
+    DIGEST_AUTH,
+    DOMAIN,
+    HOST,
+    PASSWORD,
+    SETUP_STEP,
+    USER,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
-
-STEP_USER_DATA_SCHEMA = vol.Schema(
+DIGEST_AUTH_SCHEMA = vol.Schema(
     {
-        vol.Required("host"): str,
-        vol.Required("api_key"): str,
+        USER: vol.Required(str),
+        PASSWORD: vol.Required(str),
+    }
+)
+
+API_KEY_AUTH_SCHEMA = vol.Schema(
+    {
+        API_KEY: vol.Required(str),
+    }
+)
+
+SETUP_STEP_SCHEMA = vol.Schema(
+    {
+        vol.Required(HOST): str,
+        vol.Required(AUTH_TYPE, default=DIGEST_AUTH): vol.In(
+            (DIGEST_AUTH, API_KEY_AUTH)
+        ),
     }
 )
 
@@ -33,9 +58,10 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 async def validate_input(hass: HomeAssistant, data: dict[str, str]) -> dict[str, str]:
     """Validate the user input allows us to connect.
 
-    Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
+    Data has the keys from SETUP_STEP_SCHEMA with values provided by the user.
     """
-    api = PrusaLink(async_get_clientsession(hass), data["host"], data["api_key"])
+
+    api = PrusaLink(async_get_clientsession(hass), data[HOST], data[API_KEY])
 
     try:
         async with async_timeout.timeout(5):
@@ -63,18 +89,38 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
+
+        print("starting user_step")
         if user_input is None:
             return self.async_show_form(
-                step_id="user", data_schema=STEP_USER_DATA_SCHEMA
+                step_id=SETUP_STEP,
+                data_schema=SETUP_STEP_SCHEMA,
             )
 
-        host = user_input["host"].rstrip("/")
+        print("finishing user_step")
+        if user_input[AUTH_TYPE] == DIGEST_AUTH:
+            return await self.async_step_user_auth()
+        return await self.async_step_api_key_auth()
+
+    async def async_step_user_auth(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle authentication via user + password."""
+
+        print("starting auth_step: user")
+        if user_input is None:
+            return self.async_show_form(
+                step_id=AUTH_STEP, data_schema=DIGEST_AUTH_SCHEMA
+            )
+
+        host = user_input[HOST].rstrip("/")
         if not host.startswith(("http://", "https://")):
             host = f"http://{host}"
 
         data = {
-            "host": host,
-            "api_key": user_input["api_key"],
+            HOST: host,
+            USER: user_input[USER],
+            PASSWORD: user_input[PASSWORD],
         }
         errors = {}
 
@@ -92,8 +138,49 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         else:
             return self.async_create_entry(title=info["title"], data=data)
 
+        print("finishing auth_step: user")
         return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+            step_id=SETUP_STEP, data_schema=SETUP_STEP_SCHEMA, errors=errors
+        )
+
+    async def async_step_api_key_auth(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle authentication via API key."""
+
+        print("starting auth_step: apiKey")
+        if user_input is None:
+            return self.async_show_form(
+                step_id=AUTH_STEP, data_schema=API_KEY_AUTH_SCHEMA
+            )
+
+        host = user_input[HOST].rstrip("/")
+        if not host.startswith(("http://", "https://")):
+            host = f"http://{host}"
+
+        data = {
+            HOST: host,
+            API_KEY: user_input[API_KEY],
+        }
+        errors = {}
+
+        try:
+            info = await validate_input(self.hass, data)
+        except CannotConnect:
+            errors["base"] = "cannot_connect"
+        except NotSupported:
+            errors["base"] = "not_supported"
+        except InvalidAuth:
+            errors["base"] = "invalid_auth"
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.exception("Unexpected exception")
+            errors["base"] = "unknown"
+        else:
+            return self.async_create_entry(title=info["title"], data=data)
+
+        print("finishing auth_step: apiKey")
+        return self.async_show_form(
+            step_id=SETUP_STEP, data_schema=SETUP_STEP_SCHEMA, errors=errors
         )
 
 
