@@ -7,6 +7,7 @@ from typing import Any, TypedDict
 
 from aiohttp import ClientError
 import async_timeout
+from awesomeversion import AwesomeVersion, AwesomeVersionException
 from pyprusalink import (
     API_KEY,
     API_KEY_AUTH,
@@ -80,11 +81,11 @@ async def validate_link_config(
         _LOGGER.error("Could not connect to PrusaLink: %s", err)
         raise CannotConnect from err
 
-    # try:
-    #     if AwesomeVersion(version["api"]) < AwesomeVersion("2.0.0"):
-    #         raise NotSupported
-    # except AwesomeVersionException as err:
-    #     raise NotSupported from err
+    try:
+        if AwesomeVersion(version["api"]) < AwesomeVersion("2.0.0"):
+            raise NotSupported
+    except AwesomeVersionException as err:
+        raise NotSupported from err
 
     return {"title": version["hostname"]}
 
