@@ -13,8 +13,8 @@ from pyprusalink import InvalidAuth, JobInfo, PrinterInfo, PrusaLink, PrusaLinkE
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.httpx_client import get_async_client
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
@@ -32,7 +32,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     print("async_setup_entry.entry.data:", entry.data)
     link_config = entry.data
 
-    api = PrusaLink(async_get_clientsession(hass), link_config)
+    api = PrusaLink(get_async_client(hass), link_config)
 
     coordinators = {
         "printer": PrinterUpdateCoordinator(hass, api),
