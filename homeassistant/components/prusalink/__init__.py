@@ -29,11 +29,10 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up PrusaLink from a config entry."""
-    api = PrusaLink(
-        async_get_clientsession(hass),
-        entry.data["host"],
-        entry.data["api_key"],
-    )
+    print("async_setup_entry.entry.data:", entry.data)
+    link_config = entry.data
+
+    api = PrusaLink(async_get_clientsession(hass), link_config)
 
     coordinators = {
         "printer": PrinterUpdateCoordinator(hass, api),
