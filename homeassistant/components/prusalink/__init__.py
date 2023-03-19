@@ -5,10 +5,22 @@ from abc import ABC, abstractmethod
 from datetime import timedelta
 import logging
 from time import monotonic
+from types import MappingProxyType
 from typing import Generic, TypeVar
 
 import async_timeout
-from pyprusalink import InvalidAuth, JobInfo, PrinterInfo, PrusaLink, PrusaLinkError
+from pyprusalink import (
+    API_KEY,
+    API_KEY_AUTH,
+    AUTH,
+    AUTH_TYPE,
+    HOST,
+    InvalidAuth,
+    JobInfo,
+    PrinterInfo,
+    PrusaLink,
+    PrusaLinkError,
+)
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -25,6 +37,30 @@ from .const import DOMAIN
 
 PLATFORMS: list[Platform] = [Platform.BUTTON, Platform.CAMERA, Platform.SENSOR]
 _LOGGER = logging.getLogger(__name__)
+
+
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate entry from v1 to v2."""
+    new_config_entry = config_entry
+
+    if new_config_entry.version == 1:
+        v1_data = {**config_entry.data}
+        api_key = v1_data["api_key"]
+        host = v1_data["host"]
+
+        new_data = MappingProxyType(
+            {
+                HOST: host,
+                AUTH: {AUTH_TYPE: API_KEY_AUTH, API_KEY: api_key},
+            }
+        )
+
+        new_config_entry.version = 2
+        new_config_entry.data = new_data
+
+    hass.config_entries.async_update_entry(new_config_entry, data=new_config_entry.data)
+
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
