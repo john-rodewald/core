@@ -9,18 +9,9 @@ from types import MappingProxyType
 from typing import Generic, TypeVar
 
 import async_timeout
-from pyprusalink import (
-    API_KEY,
-    API_KEY_AUTH,
-    AUTH,
-    AUTH_TYPE,
-    HOST,
-    InvalidAuth,
-    JobInfo,
-    PrinterInfo,
-    PrusaLink,
-    PrusaLinkError,
-)
+from pyprusalink import InvalidAuth, PrusaLink, PrusaLinkError
+from pyprusalink.const import API_KEY, API_KEY_AUTH, AUTH, AUTH_TYPE, HOST
+from pyprusalink.types import JobInfo, PrinterInfo
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform

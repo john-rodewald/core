@@ -8,7 +8,8 @@ from typing import Any, TypedDict
 from aiohttp import ClientError
 import async_timeout
 from awesomeversion import AwesomeVersion, AwesomeVersionException
-from pyprusalink import (
+from pyprusalink import InvalidAuth, PrusaLink
+from pyprusalink.const import (
     API_KEY,
     API_KEY_AUTH,
     AUTH,
@@ -17,10 +18,8 @@ from pyprusalink import (
     HOST,
     PASSWORD,
     USER,
-    InvalidAuth,
-    LinkConfiguration,
-    PrusaLink,
 )
+from pyprusalink.types import LinkConfiguration
 import voluptuous as vol
 
 from homeassistant import config_entries
