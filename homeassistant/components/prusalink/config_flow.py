@@ -37,8 +37,8 @@ DIGEST_AUTH_SCHEMA = vol.Schema(
     {
         AUTH_TYPE: DIGEST_AUTH,
         vol.Required(HOST): str,
-        USER: vol.Required(str),
-        PASSWORD: vol.Required(str),
+        vol.Required(USER): str,
+        vol.Required(PASSWORD): str,
     }
 )
 
@@ -46,7 +46,7 @@ API_KEY_AUTH_SCHEMA = vol.Schema(
     {
         AUTH_TYPE: API_KEY_AUTH,
         vol.Required(HOST): str,
-        API_KEY: vol.Required(str),
+        vol.Required(API_KEY): str,
     }
 )
 
@@ -191,7 +191,6 @@ def get_link_config(raw: dict[str, str]) -> LinkConfiguration:
     Output shape: LinkConfiguration
     """
 
-    print("parsing to create link config:", raw)
     link_config: LinkConfiguration = None
     host = get_host(raw[HOST])
 

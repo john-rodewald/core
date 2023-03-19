@@ -2,7 +2,22 @@
   "config": {
     "step": {
       "user": {
+        "title": "Authentication type",
         "data": {
+          "authType": "Authentication type"
+        }
+      },
+      "digest_auth": {
+        "data": {
+          "authType": "Selected authentication type",
+          "host": "[%key:common::config_flow::data::host%]",
+          "user": "[%key:common::config_flow::data::username%]",
+          "password": "[%key:common::config_flow::data::password%]"
+        }
+      },
+      "api_key_auth": {
+        "data": {
+          "authType": "Selected authentication type",
           "host": "[%key:common::config_flow::data::host%]",
           "apiKey": "[%key:common::config_flow::data::api_key%]"
         }

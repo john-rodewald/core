@@ -65,7 +65,6 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up PrusaLink from a config entry."""
-    print("async_setup_entry.entry.data:", entry.data)
     link_config = entry.data
 
     api = PrusaLink(get_async_client(hass), link_config)

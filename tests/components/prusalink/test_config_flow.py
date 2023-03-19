@@ -43,7 +43,6 @@ async def test_form(hass: HomeAssistant, mock_version_api) -> None:
         )
         await hass.async_block_till_done()
 
-    print(authStepResult)
     assert authStepResult["type"] == FlowResultType.CREATE_ENTRY
     assert authStepResult["title"] == "PrusaMINI"
     assert authStepResult["data"] == {
