@@ -10,8 +10,14 @@ from tests.common import MockConfigEntry
 @pytest.fixture
 def mock_config_entry(hass):
     """Mock a PrusaLink config entry."""
+    # TODO: mock v1 entry and test migration
     entry = MockConfigEntry(
-        domain="prusalink", data={"host": "http://example.com", "api_key": "abcdefgh"}
+        version=2,
+        domain="prusalink",
+        data={
+            "host": "http://example.com",
+            "auth": {"authType": "ApiKeyAuth", "apiKey": "developer"},
+        },
     )
     entry.add_to_hass(hass)
     return entry
